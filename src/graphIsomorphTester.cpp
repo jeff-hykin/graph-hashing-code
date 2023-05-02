@@ -8,7 +8,7 @@
  */
 
 #ifdef WIN32
-#include <windows.h>
+    #include <windows.h>
 #endif
 #include <time.h>
 #include "graphIsomorph.hpp"
@@ -18,7 +18,6 @@
 // Print usage.
 void printUsage(char *arg0)
 {
-#ifndef COLOR_REFINE
    fprintf(stderr, "Usage: %s\n", arg0);
    fprintf(stderr, "\tGenerate graphs:\n");
    fprintf(stderr, "\t\t-tests <number of graph tests>\n");
@@ -29,17 +28,6 @@ void printUsage(char *arg0)
    fprintf(stderr, "\t\t[-isomorphic (generate isomorphic graphs)]\n");
    fprintf(stderr, "\tLoad graphs:\n");
    fprintf(stderr, "\t\t-load1 <graph1 load file> -load2 <graph2 load file>\n");
-#else
-   fprintf(stderr, "Usage: %s\n", arg0);
-   fprintf(stderr, "\tGenerate graphs:\n");
-   fprintf(stderr, "\t\t-tests <number of graph tests>\n");
-   fprintf(stderr, "\t\t-numVertices <number of vertices>\n");
-   fprintf(stderr, "\t\t-numEdges <number of edges>\n");
-   fprintf(stderr, "\t\t[-structureRandomSeed <graph structure random seed>]\n");
-   fprintf(stderr, "\t\t[-isomorphic (generate isomorphic graphs)]\n");
-   fprintf(stderr, "\tLoad graphs:\n");
-   fprintf(stderr, "\t\t-load1 <graph1 load file> -load2 <graph2 load file>\n");
-#endif
 }
 
 
@@ -243,11 +231,7 @@ int main(int argc, char *argv[])
       // Are graphs isomorphic?
       GraphIsomorph *isomorph = new GraphIsomorph(graph1, graph2);
       assert(isomorph != NULL);
-#ifndef COLOR_REFINE
       if (isomorph->isomorphic())
-#else
-      if (isomorph->isomorphic())
-#endif
       {
          printf("Graphs are isomorphic\n");
       }
@@ -290,11 +274,7 @@ int main(int argc, char *argv[])
       // Are graphs isomorphic?
       isomorph = new GraphIsomorph(graph1, graph2);
       assert(isomorph != NULL);
-#ifndef COLOR_REFINE
       if (isomorph->isomorphic())
-#else
-      if (isomorph->isomorphic())
-#endif
       {
          printf("Graphs are isomorphic\n");
       }

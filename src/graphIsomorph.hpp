@@ -25,20 +25,12 @@ public:
    ~GraphIsomorph();
 
    // Are graphs isomorphic?
-#ifndef COLOR_REFINE
    bool isomorphic();
-#else
-   bool isomorphic();
-#endif
 
    // Vertex partition counts.
    int partitionCount1, partitionCount2;
 
    // Are graphs equal?
-#ifndef COLOR_REFINE
    bool equals();
-#else
-   bool equals();
-#endif
 };
 #endif

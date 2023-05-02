@@ -23,11 +23,7 @@ GraphIsomorph::~GraphIsomorph()
 
 
 // Are graphs isomorphic?
-#ifndef COLOR_REFINE
-    bool GraphIsomorph::isomorphic()
-#else
-    bool GraphIsomorph::isomorphic()
-#endif
+bool GraphIsomorph::isomorphic()
 {
    int i, i2, j, j2, d1, u1, d2, u2;
 
@@ -113,11 +109,7 @@ GraphIsomorph::~GraphIsomorph()
 
 
 // Are graphs equal?
-#ifndef COLOR_REFINE
-    bool GraphIsomorph::equals()
-#else
-    bool GraphIsomorph::equals()
-#endif
+bool GraphIsomorph::equals()
 {
    int  i, i2, j, j2, d1, u1, d2, u2;
    bool result;

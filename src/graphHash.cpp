@@ -174,9 +174,9 @@ GraphHash::VertexCoder::~VertexCoder()
 
     for (i = 0, i2 = (int)children.size(); i < i2; i++)
     {
-#ifdef COLOR_REFINE
-        if (vertex == NULL)
-#endif
+        #ifdef COLOR_REFINE
+            if (vertex == NULL)
+        #endif
         delete children[i]->coder;
         delete children[i];
     }
@@ -185,281 +185,277 @@ GraphHash::VertexCoder::~VertexCoder()
 
 
 #ifndef COLOR_REFINE
-// Recursively encode.
-void GraphHash::VertexCoder::encode(bool hashLabels, bool verbose)
-{
-    int               i, i2, n, s;
-    struct MD5Context *md5c;
-    unsigned char     *input, *p;
-    Graph::Edge       *edge;
-    char              buf[20];
+    // Recursively encode.
+    void GraphHash::VertexCoder::encode(bool hashLabels, bool verbose)
+    {
+        int               i, i2, n, s;
+        struct MD5Context *md5c;
+        unsigned char     *input, *p;
+        Graph::Edge       *edge;
+        char              buf[20];
 
-    if (codeValid)
-    {
-        return;
-    }
-    if (vertex != NULL)
-    {
-        expand();
-    }
-    s = (int)children.size();
-    for (i = 0; i < s; i++)
-    {
-        if (verbose && (vertex == NULL) && !children[i]->coder->codeValid)
-        {
-            printf("Hash vertex %d/%d\n", i + 1, s);
-        }
-        children[i]->coder->encode(hashLabels, verbose);
-        children[i]->coder->contract();
-    }
-    if (hashLabels)
-    {
-        sort(children.begin(), children.end(), ltcmpCoderLinksLabeled);
-    }
-    else
-    {
-        sort(children.begin(), children.end(), ltcmpCoderLinks);
-    }
-    n = 0;
-    if (vertex != NULL)
-    {
-        if (hashLabels)
-        {
-            n += sizeof(vertex->label);
-        }
-        if (s > 0)
-        {
-            if (hashLabels)
-            {
-                for (i = 0; i < s; i++)
-                {
-                    n += sizeof(children[i]->edge->label);
-                }
-            }
-            n += s;
-        }
-        else
-        {
-            n += 8;
-        }
-    }
-    input = new unsigned char[(s * MD5_SIZE) + n];
-    assert(input != NULL);
-    if (vertex != NULL)
-    {
-        p = input;
-        if (hashLabels)
-        {
-            memcpy(input, &vertex->label, sizeof(vertex->label));
-            p += sizeof(vertex->label);
-        }
-        if (s > 0)
-        {
-            for (i = 0; i < s; i++)
-            {
-                edge = children[i]->edge;
-                if (hashLabels)
-                {
-                    memcpy(p, &edge->label, sizeof(edge->label));
-                    p += sizeof(edge->label);
-                }
-                if (edge->directed)
-                {
-                    if (edge->source == vertex)
-                    {
-                        *p = 1;
-                    }
-                    else
-                    {
-                        *p = 0;
-                    }
-                }
-                else
-                {
-                    *p = 2;
-                }
-                p++;
-            }
-        }
-        else
-        {
-            for (i = 0, i2 = (int)vertexBranch.size(); i < i2; i++)
-            {
-                if (vertex == vertexBranch[i])
-                {
-                    break;
-                }
-            }
-            i++;
-            sprintf(buf, "%08d", i);
-            memcpy(p, buf, 8);
-        }
-    }
-    for (i = 0; i < s; i++)
-    {
-        memcpy(&input[n], children[i]->coder->code, MD5_SIZE);
-        n += MD5_SIZE;
-    }
-    md5c = new struct MD5Context;
-    assert(md5c != NULL);
-    MD5Init(md5c);
-    MD5Update(md5c, input, n);
-    MD5Final(code, md5c);
-    codeValid = true;
-    delete md5c;
-    delete[] input;
-    if (verbose && (vertex == NULL))
-    {
-        printf("Done\n");
-    }
-}
-
-
-#else
-void GraphHash::VertexCoder::encode()
-{
-    int               i, j, i2, j2, k, n, s;
-    Graph::Vertex     *v1, *v2;
-    VertexCoder       *coder;
-    VertexCoderLink   *link;
-    struct MD5Context *md5c;
-    unsigned char     *input;
-
-    s = (int)children.size();
-    for (i = 0; i < s; i++)
-    {
-        coder = children[i]->coder;
-        memset(coder->code, 0, MD5_SIZE);
-        v1 = coder->vertex;
-        for (j = 0, j2 = (int)v1->edges.size(); j < j2; j++)
-        {
-            if (v1 == v1->edges[j]->source)
-            {
-                v2 = v1->edges[j]->target;
-            }
-            else
-            {
-                v2 = v1->edges[j]->source;
-            }
-            for (k = 0; k < s; k++)
-            {
-                if (children[k]->coder->vertex == v2)
-                {
-                    link = new VertexCoderLink(v1->edges[j], children[k]->coder);
-                    assert(link != NULL);
-                    coder->children.push_back(link);
-                    break;
-                }
-            }
-        }
-    }
-
-    for (i = 0; i < s; i++)
-    {
-        for (i2 = 0; i2 < s; i2++)
-        {
-            coder = children[i2]->coder;
-            sort(coder->children.begin(), coder->children.end(), ltcmpCoderLinks);
-            n     = (int)coder->children.size();
-            input = new unsigned char[n * MD5_SIZE];
-            assert(input != NULL);
-            for (j = k = 0; j < n; j++)
-            {
-                memcpy(&input[k], coder->children[j]->coder->code, MD5_SIZE);
-                k += MD5_SIZE;
-            }
-            md5c = new struct MD5Context;
-            assert(md5c != NULL);
-            MD5Init(md5c);
-            MD5Update(md5c, input, k);
-            MD5Final(coder->newcode, md5c);
-            delete md5c;
-            delete[] input;
-        }
-
-        for (i2 = 0; i2 < s; i2++)
-        {
-            coder = children[i2]->coder;
-            memcpy(coder->code, coder->newcode, MD5_SIZE);
-            coder->codeValid = true;
-        }
-    }
-
-    sort(children.begin(), children.end(), ltcmpCoderLinks);
-    input = new unsigned char[s * MD5_SIZE];
-    assert(input != NULL);
-    for (i = j = 0; i < s; i++)
-    {
-        memcpy(&input[j], children[i]->coder->code, MD5_SIZE);
-        j += MD5_SIZE;
-    }
-    md5c = new struct MD5Context;
-    assert(md5c != NULL);
-    MD5Init(md5c);
-    MD5Update(md5c, input, j);
-    MD5Final(code, md5c);
-    codeValid = true;
-    delete md5c;
-    delete[] input;
-}
-
-
-#endif
-
-#ifndef COLOR_REFINE
-// Expand coder.
-void GraphHash::VertexCoder::expand()
-{
-    int i, i2;
-
-    vector<Graph::Vertex *> childVertexBranch;
-    Graph::Vertex           *childVertex;
-    VertexCoder             *child;
-    VertexCoderLink         *link;
-
-    for (i = 0, i2 = (int)vertexBranch.size(); i < i2; i++)
-    {
-        if (vertex == vertexBranch[i])
+        if (codeValid)
         {
             return;
         }
-        childVertexBranch.push_back(vertexBranch[i]);
-    }
-    childVertexBranch.push_back(vertex);
-    for (i = 0, i2 = (int)vertex->edges.size(); i < i2; i++)
-    {
-        if (vertex == vertex->edges[i]->source)
+        if (vertex != NULL)
         {
-            childVertex = vertex->edges[i]->target;
+            expand();
+        }
+        s = (int)children.size();
+        for (i = 0; i < s; i++)
+        {
+            if (verbose && (vertex == NULL) && !children[i]->coder->codeValid)
+            {
+                printf("Hash vertex %d/%d\n", i + 1, s);
+            }
+            children[i]->coder->encode(hashLabels, verbose);
+            children[i]->coder->contract();
+        }
+        if (hashLabels)
+        {
+            sort(children.begin(), children.end(), ltcmpCoderLinksLabeled);
         }
         else
         {
-            childVertex = vertex->edges[i]->source;
+            sort(children.begin(), children.end(), ltcmpCoderLinks);
         }
-        if (childVertex->label != NO_HASH_VERTEX_LABEL)
+        n = 0;
+        if (vertex != NULL)
         {
-            child = new VertexCoder(childVertex, childVertexBranch);
-            assert(child != NULL);
-            link = new VertexCoderLink(vertex->edges[i], child);
-            assert(link != NULL);
-            children.push_back(link);
+            if (hashLabels)
+            {
+                n += sizeof(vertex->label);
+            }
+            if (s > 0)
+            {
+                if (hashLabels)
+                {
+                    for (i = 0; i < s; i++)
+                    {
+                        n += sizeof(children[i]->edge->label);
+                    }
+                }
+                n += s;
+            }
+            else
+            {
+                n += 8;
+            }
+        }
+        input = new unsigned char[(s * MD5_SIZE) + n];
+        assert(input != NULL);
+        if (vertex != NULL)
+        {
+            p = input;
+            if (hashLabels)
+            {
+                memcpy(input, &vertex->label, sizeof(vertex->label));
+                p += sizeof(vertex->label);
+            }
+            if (s > 0)
+            {
+                for (i = 0; i < s; i++)
+                {
+                    edge = children[i]->edge;
+                    if (hashLabels)
+                    {
+                        memcpy(p, &edge->label, sizeof(edge->label));
+                        p += sizeof(edge->label);
+                    }
+                    if (edge->directed)
+                    {
+                        if (edge->source == vertex)
+                        {
+                            *p = 1;
+                        }
+                        else
+                        {
+                            *p = 0;
+                        }
+                    }
+                    else
+                    {
+                        *p = 2;
+                    }
+                    p++;
+                }
+            }
+            else
+            {
+                for (i = 0, i2 = (int)vertexBranch.size(); i < i2; i++)
+                {
+                    if (vertex == vertexBranch[i])
+                    {
+                        break;
+                    }
+                }
+                i++;
+                sprintf(buf, "%08d", i);
+                memcpy(p, buf, 8);
+            }
+        }
+        for (i = 0; i < s; i++)
+        {
+            memcpy(&input[n], children[i]->coder->code, MD5_SIZE);
+            n += MD5_SIZE;
+        }
+        md5c = new struct MD5Context;
+        assert(md5c != NULL);
+        MD5Init(md5c);
+        MD5Update(md5c, input, n);
+        MD5Final(code, md5c);
+        codeValid = true;
+        delete md5c;
+        delete[] input;
+        if (verbose && (vertex == NULL))
+        {
+            printf("Done\n");
         }
     }
-}
-
-
-// Contract coder.
-void GraphHash::VertexCoder::contract()
-{
-    int i, i2;
-
-    for (i = 0, i2 = (int)children.size(); i < i2; i++)
+#else
+    void GraphHash::VertexCoder::encode()
     {
-        delete children[i]->coder;
-        delete children[i];
+        int               i, j, i2, j2, k, n, s;
+        Graph::Vertex     *v1, *v2;
+        VertexCoder       *coder;
+        VertexCoderLink   *link;
+        struct MD5Context *md5c;
+        unsigned char     *input;
+
+        s = (int)children.size();
+        for (i = 0; i < s; i++)
+        {
+            coder = children[i]->coder;
+            memset(coder->code, 0, MD5_SIZE);
+            v1 = coder->vertex;
+            for (j = 0, j2 = (int)v1->edges.size(); j < j2; j++)
+            {
+                if (v1 == v1->edges[j]->source)
+                {
+                    v2 = v1->edges[j]->target;
+                }
+                else
+                {
+                    v2 = v1->edges[j]->source;
+                }
+                for (k = 0; k < s; k++)
+                {
+                    if (children[k]->coder->vertex == v2)
+                    {
+                        link = new VertexCoderLink(v1->edges[j], children[k]->coder);
+                        assert(link != NULL);
+                        coder->children.push_back(link);
+                        break;
+                    }
+                }
+            }
+        }
+
+        for (i = 0; i < s; i++)
+        {
+            for (i2 = 0; i2 < s; i2++)
+            {
+                coder = children[i2]->coder;
+                sort(coder->children.begin(), coder->children.end(), ltcmpCoderLinks);
+                n     = (int)coder->children.size();
+                input = new unsigned char[n * MD5_SIZE];
+                assert(input != NULL);
+                for (j = k = 0; j < n; j++)
+                {
+                    memcpy(&input[k], coder->children[j]->coder->code, MD5_SIZE);
+                    k += MD5_SIZE;
+                }
+                md5c = new struct MD5Context;
+                assert(md5c != NULL);
+                MD5Init(md5c);
+                MD5Update(md5c, input, k);
+                MD5Final(coder->newcode, md5c);
+                delete md5c;
+                delete[] input;
+            }
+
+            for (i2 = 0; i2 < s; i2++)
+            {
+                coder = children[i2]->coder;
+                memcpy(coder->code, coder->newcode, MD5_SIZE);
+                coder->codeValid = true;
+            }
+        }
+
+        sort(children.begin(), children.end(), ltcmpCoderLinks);
+        input = new unsigned char[s * MD5_SIZE];
+        assert(input != NULL);
+        for (i = j = 0; i < s; i++)
+        {
+            memcpy(&input[j], children[i]->coder->code, MD5_SIZE);
+            j += MD5_SIZE;
+        }
+        md5c = new struct MD5Context;
+        assert(md5c != NULL);
+        MD5Init(md5c);
+        MD5Update(md5c, input, j);
+        MD5Final(code, md5c);
+        codeValid = true;
+        delete md5c;
+        delete[] input;
     }
-    children.clear();
-}
+#endif
+
+#ifndef COLOR_REFINE
+    // Expand coder.
+    void GraphHash::VertexCoder::expand()
+    {
+        int i, i2;
+
+        vector<Graph::Vertex *> childVertexBranch;
+        Graph::Vertex           *childVertex;
+        VertexCoder             *child;
+        VertexCoderLink         *link;
+
+        for (i = 0, i2 = (int)vertexBranch.size(); i < i2; i++)
+        {
+            if (vertex == vertexBranch[i])
+            {
+                return;
+            }
+            childVertexBranch.push_back(vertexBranch[i]);
+        }
+        childVertexBranch.push_back(vertex);
+        for (i = 0, i2 = (int)vertex->edges.size(); i < i2; i++)
+        {
+            if (vertex == vertex->edges[i]->source)
+            {
+                childVertex = vertex->edges[i]->target;
+            }
+            else
+            {
+                childVertex = vertex->edges[i]->source;
+            }
+            if (childVertex->label != NO_HASH_VERTEX_LABEL)
+            {
+                child = new VertexCoder(childVertex, childVertexBranch);
+                assert(child != NULL);
+                link = new VertexCoderLink(vertex->edges[i], child);
+                assert(link != NULL);
+                children.push_back(link);
+            }
+        }
+    }
+
+
+    // Contract coder.
+    void GraphHash::VertexCoder::contract()
+    {
+        int i, i2;
+
+        for (i = 0, i2 = (int)children.size(); i < i2; i++)
+        {
+            delete children[i]->coder;
+            delete children[i];
+        }
+        children.clear();
+    }
 #endif
 
 // Print code.

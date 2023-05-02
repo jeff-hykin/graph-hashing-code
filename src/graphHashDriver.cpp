@@ -7,7 +7,7 @@
  */
 
 #ifdef WIN32
-#include <windows.h>
+    #include <windows.h>
 #endif
 #include <time.h>
 #include "graphHash.hpp"
@@ -32,9 +32,6 @@ void printUsage(char *arg0)
 #endif
    fprintf(stderr, "\tLoad graph and create hash:\n");
    fprintf(stderr, "\t\t[-load <graph load file>]\n");
-#ifndef COLOR_REFINE
-   fprintf(stderr, "\t\t[-verbose]\n");
-#endif
 }
 
 

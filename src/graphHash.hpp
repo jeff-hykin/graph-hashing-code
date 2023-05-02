@@ -98,7 +98,7 @@
                         unsigned char           code[MD5_SIZE];
                         bool codeValid;
                         #ifdef COLOR_REFINE
-                                unsigned char newcode[MD5_SIZE];
+                            unsigned char newcode[MD5_SIZE];
                         #endif
                         vector<VertexCoderLink *> children;
                         int labelClass;
