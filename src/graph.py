@@ -96,33 +96,71 @@ class GraphHash:
     def getHash(self):
         pass
     
-    class VertexCoder:
-        def __init__(self, vertex=None, vertexBranch=None):
-            self.vertex = vertex
-            self.vertexBranch = vertexBranch or []
-            self.code = None
-            self.codeValid = False
-            self.newcode = None
-            self.children = []
-            self.labelClass = None # int
-        
-        def encode(self):
-            pass
-            
-            consistent_hash
-        
-        @staticmethod
-        def ltcmpCoderLinks(VertexCoderLink *a, VertexCoderLink *b):
-            pass
-        @staticmethod
-        def ltcmpCoderLinksLabeled(VertexCoderLink *a, VertexCoderLink *b):
-            pass
-        @staticmethod
-        def cmpCoderLinks(VertexCoderLink *a, VertexCoderLink *b):
-            pass
-    
     class VertexCoderLink:
         def __init__(self, edge=None, coder=None):
             self.edge = edge
             self.coder = coder
         
+    class VertexCoder:
+        def __init__(self, vertex=None, vertexBranch=None):
+            self.vertex = vertex
+            self.vertexBranch = vertexBranch or []
+            self.code = tuple()
+            self.codeValid = False
+            self.newcode = tuple()
+            self.children = []
+            self.labelClass = 0
+        
+        def encode(self):
+            number_of_children = len(self.children)
+            for child_index, child in enumerate(self.children):
+                coder = child.coder
+                coder.code = tuple()
+                vertex = coder.vertex
+                for edge_index, edge in enumerate(vertex.edges):
+                    if vertex == edge.source:
+                        other_vertex = edge.target
+                    else:
+                        other_vertex = edge.source
+                    for other_child in self.children:
+                        if other_child.coder.vertex == other_vertex:
+                            link = GraphHash.VertexCoderLink(edge, other_child.coder)
+                            coder.children.append(link)
+                            break
+            
+            for _ in range(number_of_children):
+                for each_child in self.children:
+                    coder = each_child.coder
+                    coder.children.sort(key=functools.cmp_to_key(self.cmpCoderLinks))
+                    coder.newcode = consistent_hash(tuple(each.coder.code for each in coder.children))
+                
+                for each_child in self.children:
+                    coder = each_child.coder
+                    coder.code = copy(coder.newcode)
+                    coder.codeValid = True
+            
+            self.children.sort(key=functools.cmp_to_key(self.cmpCoderLinks))
+            self.code = consistent_hash(tuple(each.coder.code for each in coder.children))
+            self.codeValid = True
+
+        def printCode(self, fp=None):
+            fp = fp or sys.stdout
+            print("".join(f"{b:02x}" for b in self.code), file=fp)
+        
+        # private helper methods
+        @classmethod
+        def ltcmpCoderLinks(cls, a, b):
+            return cls.cmpCoderLinks(a, b) < 0
+        
+        @classmethod
+        def ltcmpCoderLinksLabeled(cls, a, b):
+            return cls.cmpCoderLinks(a, b) < 0
+        
+        @classmethod
+        def cmpCoderLinks(cls, a, b):
+            if a.edge.label < b.edge.label:
+                return -1
+            elif a.edge.label > b.edge.label:
+                return 1
+            else:
+                return 0
