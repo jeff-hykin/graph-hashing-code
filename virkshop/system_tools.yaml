@@ -89,6 +89,9 @@
 # 
 # 
 # 
+- (package):
+    load: [ "gcc",]
+    asBuildInput: true
 
 
 # 
