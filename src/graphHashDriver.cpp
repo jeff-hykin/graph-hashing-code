@@ -7,7 +7,7 @@
  */
 
 #ifdef WIN32
-     #include <windows.h>
+    #include <windows.h>
 #endif
 #include <time.h>
 #include "graphHash.hpp"
@@ -27,9 +27,9 @@ void printUsage(char *arg0)
     fprintf(stderr, "\t\t[-structureRandomSeed <graph structure random seed>]\n");
     fprintf(stderr, "\t\t[-labelRandomSeed <label random seed>]\n");
     fprintf(stderr, "\t\t[-save <graph save file>]\n");
-#ifndef COLOR_REFINE
-    fprintf(stderr, "\t\t[-verbose]\n");
-#endif
+    #ifndef COLOR_REFINE
+        fprintf(stderr, "\t\t[-verbose]\n");
+    #endif
     fprintf(stderr, "\tLoad graph and create hash:\n");
     fprintf(stderr, "\t\t[-load <graph load file>]\n");
 }
@@ -56,28 +56,28 @@ int main(int argc, char *argv[])
     Random        *labelRandomizer     = NULL;
     Graph::Vertex *v1, *v2;
     char          *loadFile, *saveFile;
-#ifndef COLOR_REFINE
-    bool verbose;
-#endif
+    #ifndef COLOR_REFINE
+        bool verbose;
+    #endif
     FILE *fp;
 
-#ifdef WIN32
-    // Direct stdio to parent console.
-    if (AttachConsole(ATTACH_PARENT_PROCESS))
-    {
-        freopen("CONOUT$", "w", stdout);
-        freopen("CONOUT$", "w", stderr);
-        freopen("CONIN$", "r", stdin);
-    }
-#endif
+    #ifdef WIN32
+        // Direct stdio to parent console.
+        if (AttachConsole(ATTACH_PARENT_PROCESS))
+        {
+            freopen("CONOUT$", "w", stdout);
+            freopen("CONOUT$", "w", stderr);
+            freopen("CONIN$", "r", stdin);
+        }
+    #endif
 
     numVertices = numEdges = -1;
     gotLabel    = false;
     directed    = false;
     loadFile    = saveFile = NULL;
-#ifndef COLOR_REFINE
-    verbose = false;
-#endif
+    #ifndef COLOR_REFINE
+        verbose = false;
+    #endif
     for (i = 1; i < argc; i++)
     {
         if (strcmp(argv[i], "-numVertices") == 0)
@@ -236,13 +236,13 @@ int main(int argc, char *argv[])
             continue;
         }
 
-#ifndef COLOR_REFINE
+    #ifndef COLOR_REFINE
         if (strcmp(argv[i], "-verbose") == 0)
         {
             verbose = true;
             continue;
         }
-#endif
+    #endif
 
         printUsage(argv[0]);
         return(1);
@@ -341,49 +341,49 @@ int main(int argc, char *argv[])
     assert(hash != NULL);
 
     // Hash graph.
-#ifndef COLOR_REFINE
-    if (verbose)
-    {
-#ifdef WIN32
-        SYSTEMTIME t;
-        char       buffer[1024];
-        GetLocalTime(&t);
-        if (GetDateFormat(LOCALE_USER_DEFAULT,
-                                0,
-                                &t,
-                                "dd MMM yyyy",
-                                (LPTSTR)buffer,
-                                sizeof(buffer)) > 0)
+    #ifndef COLOR_REFINE
+        if (verbose)
         {
-            printf("Begin hash at: %s ", buffer);
+        #ifdef WIN32
+                SYSTEMTIME t;
+                char       buffer[1024];
+                GetLocalTime(&t);
+                if (GetDateFormat(LOCALE_USER_DEFAULT,
+                                        0,
+                                        &t,
+                                        "dd MMM yyyy",
+                                        (LPTSTR)buffer,
+                                        sizeof(buffer)) > 0)
+                {
+                    printf("Begin hash at: %s ", buffer);
+                }
+                if (GetTimeFormat(LOCALE_USER_DEFAULT,
+                                        0,
+                                        &t,
+                                        "hh:mm:ss",
+                                        (LPTSTR)buffer,
+                                        sizeof(buffer)) > 0)
+                {
+                    printf("%s\n", buffer);
+                }
+        #else
+                time_t t = time(NULL);
+                printf("Begin hash at: %s", ctime(&t));
+        #endif
         }
-        if (GetTimeFormat(LOCALE_USER_DEFAULT,
-                                0,
-                                &t,
-                                "hh:mm:ss",
-                                (LPTSTR)buffer,
-                                sizeof(buffer)) > 0)
+        clock_t t = clock();
+
+        hash->hash(graph, verbose);
+
+        if (verbose)
         {
-            printf("%s\n", buffer);
+            t = clock() - t;
+            double time_taken = ((double)t) / CLOCKS_PER_SEC;
+            printf("Hash time=%f seconds\n", time_taken);
         }
-#else
-        time_t t = time(NULL);
-        printf("Begin hash at: %s", ctime(&t));
-#endif
-    }
-    clock_t t = clock();
-
-    hash->hash(graph, verbose);
-
-    if (verbose)
-    {
-        t = clock() - t;
-        double time_taken = ((double)t) / CLOCKS_PER_SEC;
-        printf("Hash time=%f seconds\n", time_taken);
-    }
-#else
-    hash->hash(graph);
-#endif
+    #else
+        hash->hash(graph);
+    #endif
 
     // Print.
     hash->print();
