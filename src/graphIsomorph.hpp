@@ -15,22 +15,22 @@ class GraphIsomorph
 {
 public:
 
-   // Graphs.
-   Graph *graph1, *graph2;
+    // Graphs.
+    Graph *graph1, *graph2;
 
-   // Constructor.
-   GraphIsomorph(Graph *graph1, Graph *graph2);
+    // Constructor.
+    GraphIsomorph(Graph *graph1, Graph *graph2);
 
-   // Destructor.
-   ~GraphIsomorph();
+    // Destructor.
+    ~GraphIsomorph();
 
-   // Are graphs isomorphic?
-   bool isomorphic();
+    // Are graphs isomorphic?
+    bool isomorphic();
 
-   // Vertex partition counts.
-   int partitionCount1, partitionCount2;
+    // Vertex partition counts.
+    int partitionCount1, partitionCount2;
 
-   // Are graphs equal?
-   bool equals();
+    // Are graphs equal?
+    bool equals();
 };
 #endif

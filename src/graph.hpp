@@ -21,75 +21,75 @@ class Graph
 {
 public:
 
-   // Null label.
-   enum { NULL_LABEL=0xffffffff };
+    // Null label.
+    enum { NULL_LABEL=0xffffffff };
 
-   class Edge;
+    class Edge;
 
-   // Graph vertex.
-   class Vertex
-   {
+    // Graph vertex.
+    class Vertex
+    {
 public:
-      unsigned int   id;
-      unsigned int   label;
-      vector<Edge *> edges;
-      Vertex(unsigned int label = NULL_LABEL);
-      void sourceEdges(vector<Edge *>& edgeList);
-   };
+        unsigned int   id;
+        unsigned int   label;
+        vector<Edge *> edges;
+        Vertex(unsigned int label = NULL_LABEL);
+        void sourceEdges(vector<Edge *>& edgeList);
+    };
 
-   // Graph edge.
-   class Edge
-   {
+    // Graph edge.
+    class Edge
+    {
 public:
-      unsigned int label;
-      Vertex       *source;
-      Vertex       *target;
-      bool         directed;
-      Edge(unsigned int label = NULL_LABEL);
-   };
+        unsigned int label;
+        Vertex       *source;
+        Vertex       *target;
+        bool         directed;
+        Edge(unsigned int label = NULL_LABEL);
+    };
 
-   // Vertices.
-   vector<Vertex *> vertices;
+    // Vertices.
+    vector<Vertex *> vertices;
 
-   // Constructor.
-   Graph();
+    // Constructor.
+    Graph();
 
-   // Destructor.
-   ~Graph();
+    // Destructor.
+    ~Graph();
 
-   // Add vertex.
-   Vertex *addVertex(unsigned int label = NULL_LABEL);
+    // Add vertex.
+    Vertex *addVertex(unsigned int label = NULL_LABEL);
 
-   // Connect vertices.
-   Edge *connectVertices(Vertex *source, Vertex *target,
-                         bool directed, unsigned int label = NULL_LABEL);
+    // Connect vertices.
+    Edge *connectVertices(Vertex *source, Vertex *target,
+                                 bool directed, unsigned int label = NULL_LABEL);
 
-   // Get vertex by label: returns first found.
-   Vertex *getVertex(unsigned int label);
+    // Get vertex by label: returns first found.
+    Vertex *getVertex(unsigned int label);
 
-   // Clear.
-   void clear();
+    // Clear.
+    void clear();
 
-   // Clone.
-   Graph *clone();
+    // Clone.
+    Graph *clone();
 
-   // Remove labeled edges by transferring labels to extra vertices.
-   Graph *labeledEdges2Vertices();
+    // Remove labeled edges by transferring labels to extra vertices.
+    Graph *labeledEdges2Vertices();
 
-   // Identify vertices.
-   void id();
+    // Identify vertices.
+    void id();
 
-   // Load and save.
-   void load(FILE *fp);
-   void save(FILE *fp);
+    // Load and save.
+    void load(FILE *fp);
+    void save(FILE *fp);
 
-   // Print.
-   void print(FILE *fp = stdout);
-   void print(char *label, FILE *fp = stdout);
+    // Print.
+    void print(FILE *fp = stdout);
+    void print(char *label, FILE *fp = stdout);
 
-   // Dump graph in Graphviz "dot" format.
-   void dump(FILE *fp = stdout);
-   void dump(char *label, FILE *fp = stdout);
-   void dumpSub(FILE *fp = stdout);
+    // Dump graph in Graphviz "dot" format.
+    void dump(FILE *fp = stdout);
+    void dump(char *label, FILE *fp = stdout);
+    void dumpSub(FILE *fp = stdout);
 };
 #endif
