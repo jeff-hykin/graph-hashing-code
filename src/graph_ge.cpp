@@ -1,4 +1,5 @@
 #include "graph_ge.h"
+#include <iostream>
 
 /*** record for qsorting a graph to provide another isomorphic to it ***/
 #define RecordSize    24
@@ -64,9 +65,10 @@ void create_graph(
 
 #define odd(num)     ((num) % 2)
 
-void warning(char *message)
+template <class ANYTYPE>
+void warning(ANYTYPE message)
 {
-   printf(message);
+   std::cout << message << std::endl;
 }
 
 
