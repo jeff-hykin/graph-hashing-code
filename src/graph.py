@@ -6,6 +6,8 @@ import pickle
 # NOTES:
     # .id never seems to be used 
     # NO_HASH_VERTEX_LABEL never seems to be used, and seems like it might be a rare edgecase bug
+    # .vertex_branch is never used
+    # .labelClass is never used
 
 code = type(compile('1','','single'))
 
@@ -38,13 +40,13 @@ class Graph:
     def __init__(self):
         self.vertices = []
 
-    def addVertex(self, label=None):
+    def add_vertex(self, label=None):
         vertex = self.Vertex(label)
         assert vertex is not None
         self.vertices.append(vertex)
         return vertex
 
-    def connectVertices(self, source, target, directed=False, label=None):
+    def connect_vertices(self, source, target, directed=False, label=None):
         edge = self.Edge(label)
         assert edge is not None
         edge.source = source
@@ -57,7 +59,7 @@ class Graph:
             target.edges.append(edge)
         return edge
 
-    def getVertex(self, label):
+    def get_vertex(self, label):
         for vertex in self.vertices:
             if vertex.label == label:
                 return vertex
@@ -70,7 +72,7 @@ class Graph:
         new_graph = Graph()
         vertex_mapping = {}
         for old_vertex in self.vertices:
-            new_vertex = new_graph.addVertex(old_vertex.label)
+            new_vertex = new_graph.add_vertex(old_vertex.label)
             vertex_mapping[id(old_vertex)] = new_vertex
         for old_vertex, new_vertex in zip(self.vertices, new_graph.vertices):
             for old_edge in old_vertex.edges:
@@ -86,26 +88,19 @@ class Graph:
 class GraphHash:
     def __init__(self):
         self.code = consistent_hash(tuple())
-        self.vertexCoder = None
-        self.partitionCount = 0
+        self.vertex_coder = None
     
     def hash(self, graph):
-        vertexBranch = []
         self.code = consistent_hash(tuple())
-        self.vertexCoder = None
-        self.partitionCount = 0
+        self.vertex_coder = None
 
-        self.vertexCoder = self.VertexCoder()
+        self.vertex_coder = self.VertexCoder()
         for vertex in graph.vertices:
-            child = self.VertexCoder(vertex, vertexBranch)
+            child = self.VertexCoder(vertex)
             link = self.VertexCoderLink(None, child)
-            self.vertexCoder.children.append(link)
-        self.vertexCoder.encode()
-        self.code = self.vertexCoder.code
-        self.partitionCount = 1 + sum(
-            1 for prev_child, child in zip(self.vertexCoder.children[0:-1], self.vertexCoder.children[1:])
-                if prev_child.coder.code != child.coder.code
-        )
+            self.vertex_coder.children.append(link)
+        self.vertex_coder.encode()
+        self.code = self.vertex_coder.code
         return self.code
     
     class VertexCoderLink:
@@ -114,11 +109,10 @@ class GraphHash:
             self.coder = coder
         
     class VertexCoder:
-        def __init__(self, vertex=None, vertexBranch=None):
+        def __init__(self, vertex=None,):
             self.vertex = vertex
-            self.vertexBranch = vertexBranch or []
             self.code = consistent_hash(tuple())
-            self.codeValid = False
+            self.code_valid = False
             self.newcode = consistent_hash(tuple())
             self.children = []
         
@@ -142,26 +136,26 @@ class GraphHash:
             for _ in range(number_of_children):
                 for each_child in self.children:
                     coder = each_child.coder
-                    coder.children.sort(key=functools.cmp_to_key(self.cmpCoderLinks))
+                    coder.children.sort(key=functools.cmp_to_key(self.cmp_coder_links))
                     coder.newcode = consistent_hash(tuple(each.coder.code for each in coder.children))
                 
                 for each_child in self.children:
                     coder = each_child.coder
                     coder.code = coder.newcode
-                    coder.codeValid = True
+                    coder.code_valid = True
             
-            self.children.sort(key=functools.cmp_to_key(self.cmpCoderLinks))
+            self.children.sort(key=functools.cmp_to_key(self.cmp_coder_links))
             self.code = consistent_hash(tuple(each.coder.code for each in self.children))
-            self.codeValid = True
+            self.code_valid = True
 
         # private helper methods
         @classmethod
-        def ltcmpCoderLinks(cls, a, b):
-            return cls.cmpCoderLinks(a, b) < 0
+        def ltcmp_coder_links(cls, a, b):
+            return cls.cmp_coder_links(a, b) < 0
         
         @classmethod
-        def ltcmpCoderLinksLabeled(cls, a, b):
-            result = cls.cmpCoderLinks(a, b)
+        def ltcmp_coder_links_labeled(cls, a, b):
+            result = cls.cmp_coder_links(a, b)
 
             if result < 0:
                 return True
@@ -174,7 +168,7 @@ class GraphHash:
                 return False
         
         @classmethod
-        def cmpCoderLinks(cls, a, b):
+        def cmp_coder_links(cls, a, b):
             if a.coder.code < b.coder.code:
                 return -1
             elif a.coder.code > b.coder.code:
@@ -209,81 +203,81 @@ def testGraphs():
     graph = Graph()
 
     # Add vertices.
-    a = graph.addVertex()
-    b = graph.addVertex()
-    c = graph.addVertex()
-    d = graph.addVertex()
-    e = graph.addVertex()
-    f = graph.addVertex()
-    g = graph.addVertex()
-    h = graph.addVertex()
-    i = graph.addVertex()
-    j = graph.addVertex()
-    k = graph.addVertex()
-    l = graph.addVertex()
-    m = graph.addVertex()
-    n = graph.addVertex()
-    o = graph.addVertex()
-    p = graph.addVertex()
-    q = graph.addVertex()
-    r = graph.addVertex()
-    s = graph.addVertex()
-    t = graph.addVertex()
-    u = graph.addVertex()
-    v = graph.addVertex()
-    w = graph.addVertex()
-    x = graph.addVertex()
-    y = graph.addVertex()
-    z = graph.addVertex()
+    a = graph.add_vertex()
+    b = graph.add_vertex()
+    c = graph.add_vertex()
+    d = graph.add_vertex()
+    e = graph.add_vertex()
+    f = graph.add_vertex()
+    g = graph.add_vertex()
+    h = graph.add_vertex()
+    i = graph.add_vertex()
+    j = graph.add_vertex()
+    k = graph.add_vertex()
+    l = graph.add_vertex()
+    m = graph.add_vertex()
+    n = graph.add_vertex()
+    o = graph.add_vertex()
+    p = graph.add_vertex()
+    q = graph.add_vertex()
+    r = graph.add_vertex()
+    s = graph.add_vertex()
+    t = graph.add_vertex()
+    u = graph.add_vertex()
+    v = graph.add_vertex()
+    w = graph.add_vertex()
+    x = graph.add_vertex()
+    y = graph.add_vertex()
+    z = graph.add_vertex()
 
     # Connect edges.
-    graph.connectVertices(a, b, False)
-    graph.connectVertices(b, d, False)
-    graph.connectVertices(d, e, False)
-    graph.connectVertices(e, f, False)
-    graph.connectVertices(f, c, False)
-    graph.connectVertices(c, a, False)
+    graph.connect_vertices(a, b, False)
+    graph.connect_vertices(b, d, False)
+    graph.connect_vertices(d, e, False)
+    graph.connect_vertices(e, f, False)
+    graph.connect_vertices(f, c, False)
+    graph.connect_vertices(c, a, False)
 
-    graph.connectVertices(g, c, False)
-    graph.connectVertices(f, j, False)
-    graph.connectVertices(j, i, False)
-    graph.connectVertices(i, h, False)
-    graph.connectVertices(h, g, False)
+    graph.connect_vertices(g, c, False)
+    graph.connect_vertices(f, j, False)
+    graph.connect_vertices(j, i, False)
+    graph.connect_vertices(i, h, False)
+    graph.connect_vertices(h, g, False)
 
-    graph.connectVertices(e, s, False)
-    graph.connectVertices(s, r, False)
-    graph.connectVertices(r, l, False)
-    graph.connectVertices(l, j, False)
+    graph.connect_vertices(e, s, False)
+    graph.connect_vertices(s, r, False)
+    graph.connect_vertices(r, l, False)
+    graph.connect_vertices(l, j, False)
 
-    graph.connectVertices(l, n, False)
-    graph.connectVertices(n, m, False)
-    graph.connectVertices(m, k, False)
-    graph.connectVertices(k, i, False)
+    graph.connect_vertices(l, n, False)
+    graph.connect_vertices(n, m, False)
+    graph.connect_vertices(m, k, False)
+    graph.connect_vertices(k, i, False)
 
-    graph.connectVertices(s, t, False)
-    graph.connectVertices(t, u, False)
-    graph.connectVertices(u, v, False)
-    graph.connectVertices(v, q, False)
-    graph.connectVertices(q, r, False)
+    graph.connect_vertices(s, t, False)
+    graph.connect_vertices(t, u, False)
+    graph.connect_vertices(u, v, False)
+    graph.connect_vertices(v, q, False)
+    graph.connect_vertices(q, r, False)
 
-    graph.connectVertices(q, p, False)
-    graph.connectVertices(p, o, False)
-    graph.connectVertices(o, n, False)
+    graph.connect_vertices(q, p, False)
+    graph.connect_vertices(p, o, False)
+    graph.connect_vertices(o, n, False)
 
 
     graph1 = graph.clone()
-    graph1.connectVertices(u, z, False)
-    graph1.connectVertices(z, y, False)
-    graph1.connectVertices(y, x, False)
-    graph1.connectVertices(x, w, False)
-    graph1.connectVertices(w, v, False)
+    graph1.connect_vertices(u, z, False)
+    graph1.connect_vertices(z, y, False)
+    graph1.connect_vertices(y, x, False)
+    graph1.connect_vertices(x, w, False)
+    graph1.connect_vertices(w, v, False)
 
     graph2 = graph.clone()
-    graph2.connectVertices(t, z, False)
-    # graph2.connectVertices(z, y, False)
-    # graph2.connectVertices(y, x, False)
-    # graph2.connectVertices(x, w, False)
-    # graph2.connectVertices(w, u, False)
+    graph2.connect_vertices(t, z, False)
+    graph2.connect_vertices(z, y, False)
+    graph2.connect_vertices(y, x, False)
+    graph2.connect_vertices(x, w, False)
+    graph2.connect_vertices(w, u, False)
 
     graph1_hash = GraphHash().hash(graph1)
     graph2_hash = GraphHash().hash(graph2)
