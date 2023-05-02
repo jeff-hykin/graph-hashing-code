@@ -386,5 +386,41 @@ def test_graphs():
         
         print(f'''graph3.__hash__() = {graph3.__hash__()}''')
         print(f'''graph4.__hash__() = {graph4.__hash__()}''')
-    
+        
+    if True:
+        # Figure 5.
+        graph5 = Graph()
+        One   = graph5.add_vertex()
+        Two   = graph5.add_vertex()
+        Three = graph5.add_vertex()
+        Four  = graph5.add_vertex()
+        Five  = graph5.add_vertex()
+        Six   = graph5.add_vertex()
+        graph5.connect_vertices(One, Two, False)
+        graph5.connect_vertices(One, Three, False)
+        graph5.connect_vertices(Two, Three, False)
+        graph5.connect_vertices(Three, Four, False)
+        graph5.connect_vertices(Four, Five, False)
+        graph5.connect_vertices(Four, Six, False)
+        graph5.connect_vertices(Five, Six, False)
+
+        graph6 = Graph()
+        One   = graph6.add_vertex()
+        Two   = graph6.add_vertex()
+        Three = graph6.add_vertex()
+        Four  = graph6.add_vertex()
+        Five  = graph6.add_vertex()
+        Six   = graph6.add_vertex()
+        graph6.connect_vertices(One, Two, False)
+        graph6.connect_vertices(One, Four, False)
+        graph6.connect_vertices(Two, Three, False)
+        graph6.connect_vertices(Three, Four, False)
+        graph6.connect_vertices(Three, Five, False)
+        graph6.connect_vertices(Four, Six, False)
+        graph6.connect_vertices(Five, Six, False)
+        
+        print("isomorphic test case:")
+        print(f'''graph5.__hash__() = {graph5.__hash__()}''')
+        print(f'''graph6.__hash__() = {graph6.__hash__()}''')
+
 test_graphs()
