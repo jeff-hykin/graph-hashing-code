@@ -1,3 +1,22 @@
+import collections
+from hashlib import md5 
+import pickle
+
+code = type(compile('1','','single'))
+
+def consistent_hash(value):
+    if isinstance(value, bytes):
+        return md5(value).hexdigest()
+    
+    if isinstance(value, str):
+        return md5(("@"+value).encode('utf-8')).hexdigest()
+    
+    if isinstance(value, (bool, int, float, type(None))):
+        return md5(str(value).encode('utf-8')).hexdigest()
+        
+    else:
+        return md5(pickle.dumps(value, protocol=4)).hexdigest()
+
 class Graph:
     NULL_LABEL = 0xffffffff
 
@@ -63,5 +82,47 @@ class Graph:
         return new_graph
 
     def id(self):
-        for i, v in enumerate(self.vertices):
-            v.id = i
+        for index, vertex in enumerate(self.vertices):
+            vertex.id = index
+
+
+class GraphHash:
+    NO_HASH_VERTEX_LABEL = 0xfffffffe
+    def __init__(self):
+        self.graph = None
+        self.code = None
+        self.vertexCoder = None
+    
+    def getHash(self):
+        pass
+    
+    class VertexCoder:
+        def __init__(self, vertex=None, vertexBranch=None):
+            self.vertex = vertex
+            self.vertexBranch = vertexBranch or []
+            self.code = None
+            self.codeValid = False
+            self.newcode = None
+            self.children = []
+            self.labelClass = None # int
+        
+        def encode(self):
+            pass
+            
+            consistent_hash
+        
+        @staticmethod
+        def ltcmpCoderLinks(VertexCoderLink *a, VertexCoderLink *b):
+            pass
+        @staticmethod
+        def ltcmpCoderLinksLabeled(VertexCoderLink *a, VertexCoderLink *b):
+            pass
+        @staticmethod
+        def cmpCoderLinks(VertexCoderLink *a, VertexCoderLink *b):
+            pass
+    
+    class VertexCoderLink:
+        def __init__(self, edge=None, coder=None):
+            self.edge = edge
+            self.coder = coder
+        
