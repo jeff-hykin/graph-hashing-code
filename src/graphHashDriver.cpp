@@ -29,17 +29,11 @@ void printUsage(char *arg0)
    fprintf(stderr, "\t\t[-save <graph save file>]\n");
 #ifndef COLOR_REFINE
    fprintf(stderr, "\t\t[-verbose]\n");
-#ifdef THREADS
-   fprintf(stderr, "\t\t[-numThreads <number of threads (default=1)>]\n");
-#endif
 #endif
    fprintf(stderr, "\tLoad graph and create hash:\n");
    fprintf(stderr, "\t\t[-load <graph load file>]\n");
 #ifndef COLOR_REFINE
    fprintf(stderr, "\t\t[-verbose]\n");
-#ifdef THREADS
-   fprintf(stderr, "\t\t[-numThreads <number of threads (default=1)>]\n");
-#endif
 #endif
 }
 
@@ -86,9 +80,6 @@ int main(int argc, char *argv[])
    loadFile    = saveFile = NULL;
 #ifndef COLOR_REFINE
    verbose = false;
-#ifdef THREADS
-   int numThreads = 1;
-#endif
 #endif
    for (i = 1; i < argc; i++)
    {
@@ -254,25 +245,6 @@ int main(int argc, char *argv[])
          verbose = true;
          continue;
       }
-
-#ifdef THREADS
-      if (strcmp(argv[i], "-numThreads") == 0)
-      {
-         i++;
-         if (i >= argc)
-         {
-            printUsage(argv[0]);
-            return(1);
-         }
-         numThreads = atoi(argv[i]);
-         if (numThreads < 1)
-         {
-            printUsage(argv[0]);
-            return(1);
-         }
-         continue;
-      }
-#endif
 #endif
 
       printUsage(argv[0]);
@@ -404,11 +376,7 @@ int main(int argc, char *argv[])
    }
    clock_t t = clock();
 
-#ifdef THREADS
-   hash->hash(graph, numThreads, verbose);
-#else
    hash->hash(graph, verbose);
-#endif
 
    if (verbose)
    {

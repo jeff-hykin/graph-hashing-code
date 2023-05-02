@@ -26,12 +26,7 @@ public:
 
    // Are graphs isomorphic?
 #ifndef COLOR_REFINE
-#ifdef THREADS
-   bool isomorphic(int numThreads = 1);
-
-#else
    bool isomorphic();
-#endif
 #else
    bool isomorphic();
 #endif
@@ -41,12 +36,7 @@ public:
 
    // Are graphs equal?
 #ifndef COLOR_REFINE
-#ifdef THREADS
-   bool equals(int numThreads = 1);
-
-#else
    bool equals();
-#endif
 #else
    bool equals();
 #endif

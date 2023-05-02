@@ -24,13 +24,9 @@ GraphIsomorph::~GraphIsomorph()
 
 // Are graphs isomorphic?
 #ifndef COLOR_REFINE
-#ifdef THREADS
-bool GraphIsomorph::isomorphic(int numThreads)
+    bool GraphIsomorph::isomorphic()
 #else
-bool GraphIsomorph::isomorphic()
-#endif
-#else
-bool GraphIsomorph::isomorphic()
+    bool GraphIsomorph::isomorphic()
 #endif
 {
    int i, i2, j, j2, d1, u1, d2, u2;
@@ -85,11 +81,7 @@ bool GraphIsomorph::isomorphic()
    GraphHash *hash1 = new GraphHash();
    assert(hash1 != NULL);
 #ifndef COLOR_REFINE
-#ifdef THREADS
-   hash1->hash(graph1, numThreads, false);
-#else
    hash1->hash(graph1, false);
-#endif
 #else
    hash1->hash(graph1);
 #endif
@@ -98,11 +90,7 @@ bool GraphIsomorph::isomorphic()
    GraphHash *hash2 = new GraphHash();
    assert(hash2 != NULL);
 #ifndef COLOR_REFINE
-#ifdef THREADS
-   hash2->hash(graph2, numThreads, false);
-#else
    hash2->hash(graph2, false);
-#endif
 #else
    hash2->hash(graph2);
 #endif
@@ -126,13 +114,9 @@ bool GraphIsomorph::isomorphic()
 
 // Are graphs equal?
 #ifndef COLOR_REFINE
-#ifdef THREADS
-bool GraphIsomorph::equals(int numThreads)
+    bool GraphIsomorph::equals()
 #else
-bool GraphIsomorph::equals()
-#endif
-#else
-bool GraphIsomorph::equals()
+    bool GraphIsomorph::equals()
 #endif
 {
    int  i, i2, j, j2, d1, u1, d2, u2;
@@ -188,22 +172,14 @@ bool GraphIsomorph::equals()
    GraphHash *hash1 = new GraphHash();
    assert(hash1 != NULL);
 #ifndef COLOR_REFINE
-#ifdef THREADS
-   hash1->hash(graph1, numThreads, true);
-#else
    hash1->hash(graph1, true);
-#endif
 #else
    hash1->hash(graph1);
 #endif
    GraphHash *hash2 = new GraphHash();
    assert(hash2 != NULL);
 #ifndef COLOR_REFINE
-#ifdef THREADS
-   hash2->hash(graph2, numThreads, true);
-#else
    hash2->hash(graph2, true);
-#endif
 #else
    hash2->hash(graph2);
 #endif

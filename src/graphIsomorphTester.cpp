@@ -27,14 +27,8 @@ void printUsage(char *arg0)
    fprintf(stderr, "\t\t[-directed (directed graph)]\n");
    fprintf(stderr, "\t\t[-structureRandomSeed <graph structure random seed>]\n");
    fprintf(stderr, "\t\t[-isomorphic (generate isomorphic graphs)]\n");
-#ifdef THREADS
-   fprintf(stderr, "\t\t[-numThreads <number of threads (default=1)>]\n");
-#endif
    fprintf(stderr, "\tLoad graphs:\n");
    fprintf(stderr, "\t\t-load1 <graph1 load file> -load2 <graph2 load file>\n");
-#ifdef THREADS
-   fprintf(stderr, "\t\t[-numThreads <number of threads (default=1)>]\n");
-#endif
 #else
    fprintf(stderr, "Usage: %s\n", arg0);
    fprintf(stderr, "\tGenerate graphs:\n");
@@ -82,9 +76,6 @@ int main(int argc, char *argv[])
 #endif
 
    tests = numVertices = numEdges = -1;
-#ifdef THREADS
-   int numThreads = 1;
-#endif
    for (i = 1; i < argc; i++)
    {
       if (strcmp(argv[i], "-tests") == 0)
@@ -192,24 +183,6 @@ int main(int argc, char *argv[])
       }
 
 #ifndef COLOR_REFINE
-#ifdef THREADS
-      if (strcmp(argv[i], "-numThreads") == 0)
-      {
-         i++;
-         if (i >= argc)
-         {
-            printUsage(argv[0]);
-            return(1);
-         }
-         numThreads = atoi(argv[i]);
-         if (numThreads < 1)
-         {
-            printUsage(argv[0]);
-            return(1);
-         }
-         continue;
-      }
-#endif
 #endif
 
       printUsage(argv[0]);
@@ -271,11 +244,7 @@ int main(int argc, char *argv[])
       GraphIsomorph *isomorph = new GraphIsomorph(graph1, graph2);
       assert(isomorph != NULL);
 #ifndef COLOR_REFINE
-#ifdef THREADS
-      if (isomorph->isomorphic(numThreads))
-#else
       if (isomorph->isomorphic())
-#endif
 #else
       if (isomorph->isomorphic())
 #endif
@@ -322,11 +291,7 @@ int main(int argc, char *argv[])
       isomorph = new GraphIsomorph(graph1, graph2);
       assert(isomorph != NULL);
 #ifndef COLOR_REFINE
-#ifdef THREADS
-      if (isomorph->isomorphic(numThreads))
-#else
       if (isomorph->isomorphic())
-#endif
 #else
       if (isomorph->isomorphic())
 #endif

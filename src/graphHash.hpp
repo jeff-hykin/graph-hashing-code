@@ -27,11 +27,6 @@
     #include <map>
     #include <algorithm>
     #include <assert.h>
-    #ifndef COLOR_REFINE
-        #ifdef THREADS
-            #include <pthread.h>
-        #endif
-    #endif
     #include "graph.hpp"
     #include "md5.h"
     using namespace std;
@@ -58,12 +53,7 @@
 
             // Hash graph.
             #ifndef COLOR_REFINE
-                #ifdef THREADS
-                    void hash(Graph *graph, int numThreads = 1, bool verbose = false);
-
-                #else
-                    void hash(Graph *graph, bool verbose = false);
-                #endif
+                void hash(Graph *graph, bool verbose = false);
             #else
                 void hash(Graph *graph);
             #endif
@@ -116,49 +106,21 @@
                         VertexCoder(Graph::Vertex *vertex, vector<Graph::Vertex *> vertexBranch);
                         ~VertexCoder();
                         #ifndef COLOR_REFINE
-                            #ifdef THREADS
-                                    void encode(int numThreads, bool hashLabels, bool verbose);
-                            #endif
-                                    void encode(bool hashLabels, bool verbose);
-
+                            void encode(bool hashLabels, bool verbose);
                         #else
-                                void encode();
+                            void encode();
                         #endif
                         void printCode(FILE *fp = stdout);
 
                 private:
                     #ifndef COLOR_REFINE
-                            void expand();
-                            void contract();
-
-                        #ifdef THREADS
-                                void encodeVertices(int threadNum, vector<VertexCoder *> *vertexList,
-                                                        bool hashLabels, bool verbose);
-                                static void *encodeThread(void *threadInfo);
-                        #endif
+                        void expand();
+                        void contract();
                     #endif
 
-                        static bool ltcmpCoderLinks(VertexCoderLink *a, VertexCoderLink *b);
-                        static bool ltcmpCoderLinksLabeled(VertexCoderLink *a, VertexCoderLink *b);
-                        static int cmpCoderLinks(VertexCoderLink *a, VertexCoderLink *b);
-
-                    #ifndef COLOR_REFINE
-                        #ifdef THREADS
-                                int               numThreads;
-                                bool              terminate;
-                                pthread_barrier_t updateBarrier;
-                                pthread_mutex_t   updateMutex;
-                                pthread_t         *threads;
-                                struct ThreadInfo
-                                {
-                                    int                   threadNum;
-                                    VertexCoder           *coder;
-                                    vector<VertexCoder *> *vertexList;
-                                    bool                  hashLabels;
-                                    bool                  verbose;
-                                };
-                        #endif
-                    #endif
+                    static bool ltcmpCoderLinks(VertexCoderLink *a, VertexCoderLink *b);
+                    static bool ltcmpCoderLinksLabeled(VertexCoderLink *a, VertexCoderLink *b);
+                    static int cmpCoderLinks(VertexCoderLink *a, VertexCoderLink *b);
             };
 
             // Root vertex coder.

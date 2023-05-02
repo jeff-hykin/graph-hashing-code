@@ -36,11 +36,7 @@ GraphHash::~GraphHash()
 }
 // Hash graph.
 #ifndef COLOR_REFINE
-    #ifdef THREADS
-        void GraphHash::hash(Graph *graph, int numThreads, bool verbose)
-    #else
-        void GraphHash::hash(Graph *graph, bool verbose)
-    #endif
+    void GraphHash::hash(Graph *graph, bool verbose)
 #else
     void GraphHash::hash(Graph *graph)
 #endif
@@ -78,11 +74,7 @@ GraphHash::~GraphHash()
         }
     }
     #ifndef COLOR_REFINE
-        #ifdef THREADS
-            vertexCoder->encode(numThreads, hashLabels, verbose);
-        #else
-            vertexCoder->encode(hashLabels, verbose);
-        #endif
+        vertexCoder->encode(hashLabels, verbose);
     #else
         vertexCoder->encode();
     #endif
@@ -191,69 +183,6 @@ GraphHash::VertexCoder::~VertexCoder()
     children.clear();
 }
 
-
-// Threaded encode.
-#ifndef COLOR_REFINE
-#ifdef THREADS
-void GraphHash::VertexCoder::encode(int numThreads, bool hashLabels, bool verbose)
-{
-    if (numThreads > 1)
-    {
-        int i, i2;
-        vector<VertexCoder *> vertexList;
-        for (i = 0, i2 = (int)children.size(); i < i2; i++)
-        {
-            vertexList.push_back(children[i]->coder);
-        }
-
-        // Start additional encoding threads.
-        this->numThreads = numThreads;
-        terminate        = false;
-        int n      = 0;
-        int result = pthread_barrier_init(&updateBarrier, NULL, numThreads);
-        assert(result == 0);
-        result = pthread_mutex_init(&updateMutex, NULL);
-        assert(result == 0);
-        threads = new pthread_t[numThreads - 1];
-        assert(threads != NULL);
-        struct ThreadInfo *info;
-        for (int i = 0; i < numThreads - 1; i++)
-        {
-            info = new struct ThreadInfo;
-            assert(info != NULL);
-            info->coder      = this;
-            info->threadNum  = i + 1;
-            info->vertexList = &vertexList;
-            info->hashLabels = hashLabels;
-            info->verbose    = verbose;
-            result           = pthread_create(&threads[i], NULL, encodeThread, (void *)info);
-            assert(result == 0);
-            n++;
-        }
-
-        // Encode vertices.
-        encodeVertices(0, &vertexList, hashLabels, verbose);
-
-        // Terminate threads.
-        terminate = true;
-        encodeVertices(0, &vertexList, hashLabels, verbose);
-        for (int i = 0; i < n; i++)
-        {
-            pthread_join(threads[i], NULL);
-            pthread_detach(threads[i]);
-        }
-        pthread_mutex_destroy(&updateMutex);
-        pthread_barrier_destroy(&updateBarrier);
-        delete threads;
-    }
-
-    // Encode graph.
-    encode(hashLabels, verbose);
-}
-
-
-#endif
-#endif
 
 #ifndef COLOR_REFINE
 // Recursively encode.
@@ -531,79 +460,6 @@ void GraphHash::VertexCoder::contract()
     }
     children.clear();
 }
-
-
-// Encode vertices.
-#ifdef THREADS
-void GraphHash::VertexCoder::encodeVertices(int threadNum, vector<VertexCoder *> *vertexList,
-                                                          bool hashLabels, bool verbose)
-{
-    // Synchronize threads.
-    int s = vertexList->size();
-    int i = pthread_barrier_wait(&updateBarrier);
-
-    if ((i != PTHREAD_BARRIER_SERIAL_THREAD) && (i != 0))
-    {
-        pthread_exit(NULL);
-    }
-    if (terminate)
-    {
-        if (threadNum == 0)
-        {
-            return;
-        }
-        pthread_exit(NULL);
-    }
-
-    // Update vertices.
-    int n;
-    while (true)
-    {
-        pthread_mutex_lock(&updateMutex);
-        VertexCoder *v = NULL;
-        if (!vertexList->empty())
-        {
-            v = vertexList->back();
-            vertexList->pop_back();
-            n = s - vertexList->size();
-        }
-        pthread_mutex_unlock(&updateMutex);
-        if (v == NULL)
-        {
-            break;
-        }
-        if (verbose)
-        {
-            printf("Hash vertex %d/%d, thread=%d\n", n, s, threadNum);
-        }
-        v->encode(hashLabels, verbose);
-    }
-
-    // Re-group threads.
-    pthread_barrier_wait(&updateBarrier);
-}
-
-
-// Vertex expand thread.
-void *GraphHash::VertexCoder::encodeThread(void *arg)
-{
-    struct ThreadInfo      *info     = (struct ThreadInfo *)arg;
-    int                    threadNum = info->threadNum;
-    GraphHash::VertexCoder *coder    = info->coder;
-
-    vector<VertexCoder *> *vertexList = info->vertexList;
-    bool hashLabels = info->hashLabels;
-    bool verbose    = info->verbose;
-    delete info;
-    while (true)
-    {
-        coder->encodeVertices(threadNum, vertexList, hashLabels, verbose);
-    }
-    return(NULL);
-}
-
-
-#endif
 #endif
 
 // Print code.
