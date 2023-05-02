@@ -8,26 +8,22 @@
 
 // Constructor.
 #ifndef COLOR_REFINE
-GraphHash::GraphHash(bool hashLabels)
-{
-    this->hashLabels = hashLabels;
-    memset(code, 0, MD5_SIZE);
-    graph          = NULL;
-    vertexCoder    = NULL;
-    partitionCount = 0;
-}
-
-
+    GraphHash::GraphHash(bool hashLabels)
+    {
+        this->hashLabels = hashLabels;
+        memset(code, 0, MD5_SIZE);
+        graph          = NULL;
+        vertexCoder    = NULL;
+        partitionCount = 0;
+    }
 #else
-GraphHash::GraphHash()
-{
-    memset(code, 0, MD5_SIZE);
-    graph          = NULL;
-    vertexCoder    = NULL;
-    partitionCount = 0;
-}
-
-
+    GraphHash::GraphHash()
+    {
+        memset(code, 0, MD5_SIZE);
+        graph          = NULL;
+        vertexCoder    = NULL;
+        partitionCount = 0;
+    }
 #endif
 
 // Destructor.
@@ -38,17 +34,15 @@ GraphHash::~GraphHash()
         delete vertexCoder;
     }
 }
-
-
 // Hash graph.
 #ifndef COLOR_REFINE
-#ifdef THREADS
-void GraphHash::hash(Graph *graph, int numThreads, bool verbose)
+    #ifdef THREADS
+        void GraphHash::hash(Graph *graph, int numThreads, bool verbose)
+    #else
+        void GraphHash::hash(Graph *graph, bool verbose)
+    #endif
 #else
-void GraphHash::hash(Graph *graph, bool verbose)
-#endif
-#else
-void GraphHash::hash(Graph *graph)
+    void GraphHash::hash(Graph *graph)
 #endif
 {
     int             i, i2;
@@ -83,15 +77,15 @@ void GraphHash::hash(Graph *graph)
             vertexCoder->children.push_back(link);
         }
     }
-#ifndef COLOR_REFINE
-#ifdef THREADS
-    vertexCoder->encode(numThreads, hashLabels, verbose);
-#else
-    vertexCoder->encode(hashLabels, verbose);
-#endif
-#else
-    vertexCoder->encode();
-#endif
+    #ifndef COLOR_REFINE
+        #ifdef THREADS
+            vertexCoder->encode(numThreads, hashLabels, verbose);
+        #else
+            vertexCoder->encode(hashLabels, verbose);
+        #endif
+    #else
+        vertexCoder->encode();
+    #endif
     memcpy(code, vertexCoder->code, MD5_SIZE);
 
     // Count partitions.
