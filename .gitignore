@@ -1,8 +1,10 @@
 # 
 # Custom
 # 
-
-
+*.o
+graph_hash
+graph_hash_special_tester
+graph_isomorph_tester
 
 # 
 # standard
