@@ -4,8 +4,8 @@ CC = gcc
 
 #CCFLAGS = -O3 -c
 #LINKLIBS = -lm -lstdc++
-CCFLAGS = -DTHREADS -O3 -c
-LINKLIBS = -lpthread -lm -lstdc++
+CCFLAGS = -O3 -c -std=c++14
+LINKLIBS = -lm -lstdc++
 
 all: ../bin/graph_hash ../bin/graph_isomorph_tester ../bin/graph_hash_special_tester
 
