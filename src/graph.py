@@ -3,6 +3,10 @@ from hashlib import md5
 import functools
 import pickle
 
+# NOTES:
+    # .id never seems to be used 
+    # NO_HASH_VERTEX_LABEL never seems to be used, and seems like it might be a rare edgecase bug
+
 code = type(compile('1','','single'))
 
 def consistent_hash(value):
@@ -28,7 +32,6 @@ class Graph:
         
     class Vertex:
         def __init__(self, label=None):
-            self.id = 0
             self.label = label
             self.edges = []
 
@@ -68,7 +71,6 @@ class Graph:
         vertex_mapping = {}
         for old_vertex in self.vertices:
             new_vertex = new_graph.addVertex(old_vertex.label)
-            new_vertex.id = old_vertex.id
             vertex_mapping[id(old_vertex)] = new_vertex
         for old_vertex, new_vertex in zip(self.vertices, new_graph.vertices):
             for old_edge in old_vertex.edges:
@@ -79,10 +81,6 @@ class Graph:
                 new_vertex.edges.append(new_edge)
         
         return new_graph
-
-    def id(self):
-        for index, vertex in enumerate(self.vertices):
-            vertex.id = index
 
 
 class GraphHash:
@@ -99,10 +97,9 @@ class GraphHash:
 
         self.vertexCoder = self.VertexCoder()
         for vertex in graph.vertices:
-            if vertex.label != None:
-                child = self.VertexCoder(vertex, vertexBranch)
-                link = self.VertexCoderLink(None, child)
-                self.vertexCoder.children.append(link)
+            child = self.VertexCoder(vertex, vertexBranch)
+            link = self.VertexCoderLink(None, child)
+            self.vertexCoder.children.append(link)
         self.vertexCoder.encode()
         self.code = self.vertexCoder.code
         self.partitionCount = 1 + sum(
@@ -150,7 +147,7 @@ class GraphHash:
                 
                 for each_child in self.children:
                     coder = each_child.coder
-                    coder.code = copy(coder.newcode)
+                    coder.code = coder.newcode
                     coder.codeValid = True
             
             self.children.sort(key=functools.cmp_to_key(self.cmpCoderLinks))
@@ -178,7 +175,6 @@ class GraphHash:
         
         @classmethod
         def cmpCoderLinks(cls, a, b):
-            result = memcmp(a.coder.code, b.coder.code, MD5_SIZE)
             if a.coder.code < b.coder.code:
                 return -1
             elif a.coder.code > b.coder.code:

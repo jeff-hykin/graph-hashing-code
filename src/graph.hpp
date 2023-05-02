@@ -8,6 +8,7 @@
  */
 
 #ifndef __GRAPH__
+    #define COLOR_REFINE
     #define __GRAPH__
 
     #include <stdio.h>
